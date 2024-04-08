@@ -1,19 +1,23 @@
 package ru.irya_lis.springcourse.controllers;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.irya_lis.springcourse.dao.PersonDao;
 import ru.irya_lis.springcourse.models.Person;
 
+import javax.validation.Valid;
+
+@Validated
 @Controller
 @RequestMapping("/people")
-public class PeopleControllers {
+public class PeopleController {
 
     private final PersonDao personDao;
 
-    public PeopleControllers(PersonDao personDao) {
+    public PeopleController(PersonDao personDao) {
         this.personDao = personDao;
     }
 
@@ -36,7 +40,10 @@ public class PeopleControllers {
     }
 
     @PostMapping()
-    public String create(@ModelAttribute("person") Person person) {
+    public String create(@ModelAttribute("person") @Valid Person person, BindingResult bindingResult) {
+        if(bindingResult.hasErrors()) {
+            return "people/new";
+        }
         personDao.save(person);
         return "redirect:/people";
     }
@@ -49,7 +56,12 @@ public class PeopleControllers {
     }
 
     @PatchMapping("/{id}")
-    public String update(@ModelAttribute("person") Person person, @PathVariable("id") int id) {
+    public String update(@ModelAttribute("person") @Valid Person person, BindingResult bindingResult,
+                         @PathVariable("id") int id) {
+        if(bindingResult.hasErrors()) {
+            return "people/edit";
+        }
+
         personDao.update(id, person);
         return "redirect:/people";
     }
